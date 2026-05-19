@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DevX UpTime AI — Operations Canvas (Prototype)</title>
-<meta name="description" content="Interactive prototype of the DevX UpTime AI Operations Canvas — built for refining reliability engineers." />
+<title>devx UpTime AI — Operations Canvas (Prototype)</title>
+<meta name="description" content="Interactive prototype of the devx UpTime AI Operations Canvas — built for refining reliability engineers." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -17,7 +17,7 @@
   <div class="topbar-left">
     <div class="logo">
       <span class="logo-mark">D</span>
-      <span class="logo-text">DevX UpTime AI</span>
+      <span class="logo-text">devx UpTime AI</span>
       <span class="env-tag">Operations Canvas</span>
     </div>
   </div>
@@ -44,15 +44,19 @@
   </div>
 </header>
 
-<!-- ─────────── DEMO HUD (visible during pitch) ─────────── -->
+<!-- ─────────── DEMO HUD (opens on request) ─────────── -->
 <div class="demo-hud" id="demoHud">
-  <button class="hud-toggle" id="hudToggle" title="Toggle demo guide">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+  <button class="hud-launch" id="hudToggle" title="Open demo guide">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>Demo Guide</span>
   </button>
   <div class="hud-content" id="hudContent">
     <div class="hud-header">
       <span class="hud-label">Demo Guide</span>
-      <span class="hud-time" id="hudTime">Step 1 of 7</span>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <span class="hud-time" id="hudTime">Step 1 of 9</span>
+        <button class="hud-dismiss" id="hudDismiss" title="Close">×</button>
+      </div>
     </div>
     <div class="hud-script" id="hudScript">Welcome to the operations canvas. This is what a reliability engineer at Sriracha refinery sees the moment they sign in. Let's walk through a real scenario.</div>
     <div class="hud-controls">
@@ -1745,10 +1749,17 @@
 
 </main>
 
-<!-- ─────────── EMBEDDED COPILOT (CogPilot-style) ─────────── -->
+<!-- ─────────── EMBEDDED COPILOT (Prominent CTA) ─────────── -->
 <div class="copilot-fab" id="copilotFab">
-  <button class="copilot-btn" id="copilotBtn" title="Ask devx ✦">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
+  <div class="copilot-tease" id="copilotTease">
+    <span class="tease-icon">✦</span>
+    <span class="tease-text">Ask devx Copilot — try me</span>
+    <span class="tease-arrow">→</span>
+  </div>
+  <button class="copilot-btn" id="copilotBtn" title="Ask devx Copilot ✦">
+    <span class="copilot-pulse-ring"></span>
+    <span class="copilot-pulse-ring delay"></span>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
   </button>
   <div class="copilot-panel" id="copilotPanel">
     <div class="copilot-header">

@@ -2040,6 +2040,187 @@ body {
 
 .canvas-panel:hover .resize-handle { opacity: 1; }
 
+/* ═══════════════════════════════════════════
+   DRAGGABLE SVG ELEMENTS WITHIN P&ID
+═══════════════════════════════════════════ */
+.pid-draggable,
+.pid-fs-draggable {
+  cursor: grab;
+  transition: filter 0.15s;
+}
+
+.pid-draggable:hover,
+.pid-fs-draggable:hover {
+  filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.35));
+}
+
+.pid-draggable.dragging,
+.pid-fs-draggable.dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.45));
+}
+
+/* Selection ring when hovered */
+.pid-draggable:hover::after,
+.pid-fs-draggable:hover::after { content: none; }
+
+/* Expand button styling */
+.pid-expand-btn {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: rgba(37, 99, 235, 0.2) !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.pid-expand-btn:hover {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+
+/* ═══════════════════════════════════════════
+   FULLSCREEN P&ID OVERLAY
+═══════════════════════════════════════════ */
+.pid-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 54, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  padding: 1.5rem;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.pid-fullscreen.shown { display: flex; }
+
+.pid-fs-toolbar {
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 0.95rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pid-fs-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.pid-fs-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pid-fs-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.pid-fs-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pid-fs-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-soft);
+  border-radius: 100px;
+}
+
+.pid-fs-hint svg { color: var(--accent); }
+
+.pid-fs-reset,
+.pid-fs-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pid-fs-reset:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.pid-fs-close {
+  background: var(--text-primary);
+  color: #fff;
+  border-color: var(--text-primary);
+}
+
+.pid-fs-close:hover { background: var(--critical); border-color: var(--critical); }
+
+.pid-fs-stage {
+  flex: 1;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+#pidFsSvg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pid-fs-status {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 2.5rem;
+  background: rgba(15, 30, 54, 0.92);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  backdrop-filter: blur(6px);
+}
+
+.pid-fs-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse-live 1.4s ease-in-out infinite;
+}
+
+.pid-fs-status.dragging .pid-fs-status-dot {
+  background: var(--accent);
+  animation: none;
+}
+
 .canvas-panel-header {
   display: flex;
   justify-content: space-between;

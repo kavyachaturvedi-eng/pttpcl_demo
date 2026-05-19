@@ -514,7 +514,6 @@
         panels.forEach(p => {
           const orig = originalPositions.get(p);
           if (orig) {
-            // Animate the reset
             p.style.transition = 'left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease';
             p.style.left = orig.left;
             p.style.top = orig.top;
@@ -523,12 +522,163 @@
             setTimeout(() => { p.style.transition = ''; }, 350);
           }
         });
-        // Visual feedback on button
         resetBtn.style.background = 'var(--success)';
         setTimeout(() => { resetBtn.style.background = ''; }, 600);
       });
     }
+
+    // ─── SVG ELEMENT DRAGGING (inside P&ID) ───
+    initSvgDragging(document.getElementById('pidSvg'), '.pid-draggable');
   }
+
+  // ─── REUSABLE: Drag SVG <g> elements via transform ───
+  function initSvgDragging(svg, selector, onDragStart, onDragEnd) {
+    if (!svg) return;
+    const elements = svg.querySelectorAll(selector);
+    if (!elements.length) return;
+
+    // Track original transforms for reset
+    const originals = new Map();
+    elements.forEach(el => originals.set(el, el.getAttribute('transform') || 'translate(0,0)'));
+
+    let active = null;
+    let startX = 0, startY = 0;
+    let startTx = 0, startTy = 0;
+
+    function parseTranslate(transformStr) {
+      if (!transformStr) return { x: 0, y: 0 };
+      const m = transformStr.match(/translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/);
+      return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : { x: 0, y: 0 };
+    }
+
+    function getSvgPoint(e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function onMouseDown(e) {
+      const el = e.target.closest(selector);
+      if (!el || !svg.contains(el)) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      active = el;
+      el.classList.add('dragging');
+      // Bring to front by moving to end of parent
+      el.parentNode.appendChild(el);
+
+      const pt = getSvgPoint(e);
+      startX = pt.x;
+      startY = pt.y;
+
+      const current = parseTranslate(el.getAttribute('transform'));
+      startTx = current.x;
+      startTy = current.y;
+
+      if (onDragStart) onDragStart(el);
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+
+    function onMouseMove(e) {
+      if (!active) return;
+      e.preventDefault();
+      const pt = getSvgPoint(e);
+      const dx = pt.x - startX;
+      const dy = pt.y - startY;
+      active.setAttribute('transform', `translate(${startTx + dx},${startTy + dy})`);
+    }
+
+    function onMouseUp() {
+      if (active) {
+        active.classList.remove('dragging');
+      }
+      if (onDragEnd) onDragEnd(active);
+      active = null;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    svg.addEventListener('mousedown', onMouseDown);
+
+    // Return a reset function bound to this SVG
+    return function reset() {
+      elements.forEach(el => {
+        const orig = originals.get(el);
+        el.style.transition = 'transform 0.3s ease';
+        el.setAttribute('transform', orig);
+        setTimeout(() => { el.style.transition = ''; }, 350);
+      });
+    };
+  }
+
+  // ─── FULLSCREEN P&ID OVERLAY ───
+  function initPidFullscreen() {
+    const expandBtn = document.getElementById('pidExpandBtn');
+    const overlay = document.getElementById('pidFullscreen');
+    const closeBtn = document.getElementById('pidFsClose');
+    const resetBtn = document.getElementById('pidFsReset');
+    const statusEl = document.getElementById('pidFsStatus');
+    const statusText = document.getElementById('pidFsStatusText');
+    const fsSvg = document.getElementById('pidFsSvg');
+
+    if (!expandBtn || !overlay || !fsSvg) return;
+
+    // Init SVG drag handlers for fullscreen with status feedback
+    const resetFsDrag = initSvgDragging(
+      fsSvg,
+      '.pid-fs-draggable',
+      (el) => {
+        const id = el.getAttribute('data-pid-id') || 'element';
+        if (statusEl) statusEl.classList.add('dragging');
+        if (statusText) statusText.textContent = `Dragging ${id.replace('-fs', '').toUpperCase()}...`;
+      },
+      (el) => {
+        if (statusEl) statusEl.classList.remove('dragging');
+        if (statusText) statusText.textContent = 'Ready · Click and drag any element';
+      }
+    );
+
+    function openFullscreen() {
+      overlay.classList.add('shown');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeFullscreen() {
+      overlay.classList.remove('shown');
+      document.body.style.overflow = '';
+    }
+
+    expandBtn.addEventListener('click', openFullscreen);
+    closeBtn.addEventListener('click', closeFullscreen);
+
+    if (resetBtn && resetFsDrag) {
+      resetBtn.addEventListener('click', () => {
+        resetFsDrag();
+        resetBtn.style.background = 'var(--success)';
+        resetBtn.style.color = '#fff';
+        if (statusText) statusText.textContent = 'Layout reset';
+        setTimeout(() => {
+          resetBtn.style.background = '';
+          resetBtn.style.color = '';
+          if (statusText) statusText.textContent = 'Ready · Click and drag any element';
+        }, 800);
+      });
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('shown')) {
+        closeFullscreen();
+      }
+    });
+  }
+
+  // Initialize fullscreen handlers once
+  initPidFullscreen();
 
   // Initialize canvas drag/drop when the canvas view first becomes active
   let canvasInitialized = false;

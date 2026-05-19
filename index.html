@@ -543,12 +543,25 @@
     </div>
 
     <!-- The Canvas grid — multimodal workspace -->
-    <div class="canvas-grid">
+    <div class="canvas-grid" id="canvasGrid">
+
+      <!-- Canvas toolbar -->
+      <div class="canvas-toolbar">
+        <div class="canvas-toolbar-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l3 3 3-3" transform="rotate(180 18 21)"/><path d="M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg>
+          <span>Drag panels by header · Resize from corner</span>
+        </div>
+        <button class="canvas-reset-btn" id="canvasResetBtn" title="Reset layout">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Reset layout
+        </button>
+      </div>
 
       <!-- P&ID panel -->
-      <div class="canvas-panel pid-panel">
+      <div class="canvas-panel pid-panel" data-panel-id="pid">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">P&amp;ID</span>
             <span class="panel-title">CDU-1 · DWG-CDU1-3401-R7</span>
           </div>
@@ -622,9 +635,10 @@
       </div>
 
       <!-- 3D Model panel -->
-      <div class="canvas-panel">
+      <div class="canvas-panel three-d-panel" data-panel-id="3d">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">3D</span>
             <span class="panel-title">CDU-1 Unit · Pump House A</span>
           </div>
@@ -704,9 +718,10 @@
       </div>
 
       <!-- Live chart panel -->
-      <div class="canvas-panel">
+      <div class="canvas-panel chart-panel" data-panel-id="chart">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">CHART</span>
             <span class="panel-title">P-204 vibration · 90 days</span>
           </div>
@@ -748,9 +763,10 @@
       </div>
 
       <!-- Documents + Copilot panel -->
-      <div class="canvas-panel">
+      <div class="canvas-panel docs-panel-pos" data-panel-id="docs">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">DOCS</span>
             <span class="panel-title">OEM Manual · Sulzer OHH</span>
           </div>
@@ -778,9 +794,10 @@
       </div>
 
       <!-- Work orders panel -->
-      <div class="canvas-panel">
+      <div class="canvas-panel wo-panel" data-panel-id="wo">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">SAP PM</span>
             <span class="panel-title">P-204 work order history</span>
           </div>
@@ -806,9 +823,10 @@
       </div>
 
       <!-- Collaboration thread panel -->
-      <div class="canvas-panel canvas-thread">
+      <div class="canvas-panel canvas-thread" data-panel-id="thread">
         <div class="canvas-panel-header">
           <div>
+            <svg class="drag-handle-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
             <span class="panel-type">THREAD</span>
             <span class="panel-title">P-204 Investigation · 4 comments</span>
           </div>

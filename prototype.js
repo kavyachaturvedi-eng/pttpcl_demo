@@ -1,5 +1,5 @@
 /* ============================================================
-   DevX UpTime AI — Prototype interactions
+   devx UpTime AI — Prototype interactions
    ============================================================ */
 
 (function() {
@@ -159,6 +159,7 @@
 
   let hudIndex = 0;
   const hudToggle = document.getElementById('hudToggle');
+  const hudDismiss = document.getElementById('hudDismiss');
   const hudContent = document.getElementById('hudContent');
   const hudScript = document.getElementById('hudScript');
   const hudTime = document.getElementById('hudTime');
@@ -176,24 +177,23 @@
 
   function advanceHud(direction) {
     const newIdx = hudIndex + direction;
-    if (newIdx >= HUD_SCRIPT.length) {
-      // restart
-      hudIndex = 0;
-    } else if (newIdx < 0) {
-      hudIndex = 0;
-    } else {
-      hudIndex = newIdx;
-    }
+    if (newIdx >= HUD_SCRIPT.length) hudIndex = 0;
+    else if (newIdx < 0) hudIndex = 0;
+    else hudIndex = newIdx;
     const s = HUD_SCRIPT[hudIndex];
     switchView(s.view);
     updateHud(hudIndex);
   }
 
+  function openHud() { if (hudContent) hudContent.classList.add('shown'); }
+  function closeHud() { if (hudContent) hudContent.classList.remove('shown'); }
+
   if (hudToggle && hudContent) {
     hudToggle.addEventListener('click', () => {
-      hudContent.classList.toggle('shown');
+      hudContent.classList.contains('shown') ? closeHud() : openHud();
     });
   }
+  if (hudDismiss) hudDismiss.addEventListener('click', closeHud);
 
   if (hudNext) hudNext.addEventListener('click', () => advanceHud(1));
   if (hudPrev) hudPrev.addEventListener('click', () => advanceHud(-1));
@@ -203,18 +203,21 @@
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'ArrowRight' || e.key === ' ') {
       e.preventDefault();
+      // Auto-open HUD on first navigation
+      if (hudContent && !hudContent.classList.contains('shown')) openHud();
       advanceHud(1);
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
+      if (hudContent && !hudContent.classList.contains('shown')) openHud();
       advanceHud(-1);
     } else if (e.key === 'h' || e.key === 'H') {
       if (hudContent) hudContent.classList.toggle('shown');
     }
   });
 
-  // Initialize HUD as open
+  // Initialize HUD at step 0 but HIDDEN by default
   updateHud(0);
-  if (hudContent) hudContent.classList.add('shown');
+  // Note: not adding 'shown' class — user must click to open
 
   // ─────────── INITIAL ANIMATION ───────────
   // If page loads on Diagnostician view, animate immediately
@@ -239,7 +242,9 @@
   }
 
   // ─────────── EMBEDDED COPILOT ───────────
+  const copilotFab = document.getElementById('copilotFab');
   const copilotBtn = document.getElementById('copilotBtn');
+  const copilotTease = document.getElementById('copilotTease');
   const copilotPanel = document.getElementById('copilotPanel');
   const copilotClose = document.getElementById('copilotClose');
   const copilotInput = document.getElementById('copilotInput');
@@ -267,8 +272,14 @@
     'default': 'I have full canvas context — sensor history, work orders, P&ID, OEM specs, Memory matches. Try one of the suggestions above or ask anything specific about P-204.'
   };
 
-  function openCopilot() { if (copilotPanel) copilotPanel.classList.add('shown'); }
-  function closeCopilot() { if (copilotPanel) copilotPanel.classList.remove('shown'); }
+  function openCopilot() {
+    if (copilotPanel) copilotPanel.classList.add('shown');
+    if (copilotFab) copilotFab.classList.add('opened');
+  }
+  function closeCopilot() {
+    if (copilotPanel) copilotPanel.classList.remove('shown');
+    // Don't remove 'opened' — the teaser shouldn't come back once dismissed
+  }
   function updateCopilotContext(view) {
     if (copilotContext && CONTEXT_MAP[view]) copilotContext.textContent = CONTEXT_MAP[view];
   }
@@ -276,6 +287,8 @@
   if (copilotBtn) copilotBtn.addEventListener('click', () => {
     copilotPanel.classList.contains('shown') ? closeCopilot() : openCopilot();
   });
+  // Clicking the teaser ALSO opens the panel
+  if (copilotTease) copilotTease.addEventListener('click', openCopilot);
   if (copilotClose) copilotClose.addEventListener('click', closeCopilot);
 
   function addCopilotMessage(text, isUser) {

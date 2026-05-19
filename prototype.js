@@ -336,10 +336,7 @@
     }
   });
 
-  // Update copilot context whenever view changes
-  const origSwitchView = switchView;
-  // Hook into view changes by observing nav clicks (already done above)
-  // We'll also patch the existing switchView via a MutationObserver fallback
+  // Update copilot context whenever view changes (via nav clicks)
   document.querySelectorAll('[data-view]').forEach(item => {
     item.addEventListener('click', () => {
       setTimeout(() => {
@@ -351,5 +348,208 @@
       }, 50);
     });
   });
+
+  // ─────────── CANVAS DRAG & DROP + RESIZE ───────────
+  function initCanvas() {
+    const canvas = document.getElementById('canvasGrid');
+    if (!canvas) return;
+
+    const panels = canvas.querySelectorAll('.canvas-panel');
+    if (!panels.length) return;
+
+    // Capture original positions for reset
+    const originalPositions = new Map();
+    panels.forEach(p => {
+      const cs = window.getComputedStyle(p);
+      originalPositions.set(p, {
+        left: cs.left,
+        top: cs.top,
+        width: cs.width,
+        height: cs.height
+      });
+
+      // Inject resize handle into each panel
+      if (!p.querySelector('.resize-handle')) {
+        const rh = document.createElement('div');
+        rh.className = 'resize-handle';
+        rh.title = 'Drag to resize';
+        p.appendChild(rh);
+      }
+    });
+
+    // Z-index management — clicked panel comes to front
+    let topZ = 10;
+    function bringToFront(panel) {
+      topZ += 1;
+      panel.style.zIndex = topZ;
+    }
+
+    // ─── DRAGGING ───
+    let dragState = null;
+
+    function onMouseDownDrag(e) {
+      const header = e.target.closest('.canvas-panel-header');
+      if (!header) return;
+      // Don't drag if user clicked an interactive element inside header
+      if (e.target.closest('button, a, input')) return;
+
+      const panel = header.closest('.canvas-panel');
+      if (!panel) return;
+
+      // Skip on mobile (panels are stacked, position:relative)
+      if (window.innerWidth <= 1200) return;
+
+      e.preventDefault();
+      bringToFront(panel);
+      panel.classList.add('dragging');
+
+      const rect = panel.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+
+      dragState = {
+        panel,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        canvasLeft: canvasRect.left,
+        canvasTop: canvasRect.top
+      };
+
+      document.addEventListener('mousemove', onMouseMoveDrag);
+      document.addEventListener('mouseup', onMouseUpDrag);
+    }
+
+    function onMouseMoveDrag(e) {
+      if (!dragState) return;
+      e.preventDefault();
+      const { panel, offsetX, offsetY, canvasLeft, canvasTop } = dragState;
+      let newLeft = e.clientX - canvasLeft - offsetX;
+      let newTop = e.clientY - canvasTop - offsetY;
+
+      // Clamp to canvas bounds (8px padding)
+      const canvasW = canvas.clientWidth;
+      const canvasH = canvas.clientHeight;
+      const panelW = panel.offsetWidth;
+      const panelH = panel.offsetHeight;
+      newLeft = Math.max(8, Math.min(canvasW - panelW - 8, newLeft));
+      newTop = Math.max(8, Math.min(canvasH - panelH - 8, newTop));
+
+      panel.style.left = newLeft + 'px';
+      panel.style.top = newTop + 'px';
+    }
+
+    function onMouseUpDrag() {
+      if (dragState && dragState.panel) {
+        dragState.panel.classList.remove('dragging');
+      }
+      dragState = null;
+      document.removeEventListener('mousemove', onMouseMoveDrag);
+      document.removeEventListener('mouseup', onMouseUpDrag);
+    }
+
+    // ─── RESIZING ───
+    let resizeState = null;
+
+    function onMouseDownResize(e) {
+      const handle = e.target.closest('.resize-handle');
+      if (!handle) return;
+      const panel = handle.closest('.canvas-panel');
+      if (!panel) return;
+      if (window.innerWidth <= 1200) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      bringToFront(panel);
+      panel.classList.add('resizing');
+
+      resizeState = {
+        panel,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: panel.offsetWidth,
+        startH: panel.offsetHeight
+      };
+
+      document.addEventListener('mousemove', onMouseMoveResize);
+      document.addEventListener('mouseup', onMouseUpResize);
+    }
+
+    function onMouseMoveResize(e) {
+      if (!resizeState) return;
+      e.preventDefault();
+      const { panel, startX, startY, startW, startH } = resizeState;
+      const newW = Math.max(220, startW + (e.clientX - startX));
+      const newH = Math.max(160, startH + (e.clientY - startY));
+      panel.style.width = newW + 'px';
+      panel.style.height = newH + 'px';
+    }
+
+    function onMouseUpResize() {
+      if (resizeState && resizeState.panel) {
+        resizeState.panel.classList.remove('resizing');
+      }
+      resizeState = null;
+      document.removeEventListener('mousemove', onMouseMoveResize);
+      document.removeEventListener('mouseup', onMouseUpResize);
+    }
+
+    // ─── EVENT LISTENERS ───
+    canvas.addEventListener('mousedown', (e) => {
+      // Resize handle takes priority over drag
+      if (e.target.closest('.resize-handle')) {
+        onMouseDownResize(e);
+      } else if (e.target.closest('.canvas-panel-header')) {
+        onMouseDownDrag(e);
+      }
+    });
+
+    // Click anywhere on panel brings to front
+    panels.forEach(p => {
+      p.addEventListener('mousedown', () => bringToFront(p));
+    });
+
+    // ─── RESET BUTTON ───
+    const resetBtn = document.getElementById('canvasResetBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        panels.forEach(p => {
+          const orig = originalPositions.get(p);
+          if (orig) {
+            // Animate the reset
+            p.style.transition = 'left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease';
+            p.style.left = orig.left;
+            p.style.top = orig.top;
+            p.style.width = orig.width;
+            p.style.height = orig.height;
+            setTimeout(() => { p.style.transition = ''; }, 350);
+          }
+        });
+        // Visual feedback on button
+        resetBtn.style.background = 'var(--success)';
+        setTimeout(() => { resetBtn.style.background = ''; }, 600);
+      });
+    }
+  }
+
+  // Initialize canvas drag/drop when the canvas view first becomes active
+  let canvasInitialized = false;
+  function ensureCanvasInit() {
+    const canvasView = document.getElementById('view-canvas');
+    if (canvasView && canvasView.classList.contains('active') && !canvasInitialized) {
+      // Wait a frame for the layout to apply
+      requestAnimationFrame(() => {
+        initCanvas();
+        canvasInitialized = true;
+      });
+    }
+  }
+
+  // Hook into view switching
+  const observer = new MutationObserver(ensureCanvasInit);
+  const canvasViewEl = document.getElementById('view-canvas');
+  if (canvasViewEl) {
+    observer.observe(canvasViewEl, { attributes: true, attributeFilter: ['class'] });
+    // Also check on initial load
+    ensureCanvasInit();
+  }
 
 })();
